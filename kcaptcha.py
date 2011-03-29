@@ -57,8 +57,12 @@ class Captcha(object):
         dy_amplitude = self._amplitude()
         # Variable lookup optimization
         sin = math.sin
+        bg_color = self.bg_color
         dst_data = [self.bg_color] * (height*width)
         for x, y in itertools.product(xrange(width), xrange(height)):
+            color_diff = src_data[x + width*y] - bg_color
+            if not color_diff:
+                continue
             # source x (float)
             dx_x = sin(x * dx_period_x + dx_phase_x)
             dx_y = sin(y * dx_period_y + dx_phase_y)
@@ -77,13 +81,10 @@ class Captcha(object):
             fry = sy - sy_i
             idx1 = sx_i + width*sy_i
             idx2 = idx1 + width
-            color = int(
-                src_data[idx1] * (1-frx) * (1-fry) + \
-                src_data[idx1+1] * frx * (1-fry) + \
-                src_data[idx2] * (1-frx) * fry + \
-                src_data[idx2+1] * frx * fry
-            )
-            dst_data[x + width*y] = color
+            dst_data[idx1] += int(color_diff * (1-frx) * (1-fry))
+            dst_data[idx1+1] += int(color_diff * frx * (1-fry))
+            dst_data[idx2] += int(color_diff * (1-frx) * fry)
+            dst_data[idx2+1] += int(color_diff * frx * fry)
         dst_img.putdata(dst_data)
         return dst_img
 
