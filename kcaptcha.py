@@ -53,17 +53,21 @@ class Captcha(object):
         dy_phase_y = self._phase()
         dx_amplitude = self._amplitude()
         dy_amplitude = self._amplitude()
+        # Variable lookup optimization
+        sin = math.sin
+        get = img.getpixel
+        put = new_img.putpixel
         for x in xrange(width):
             for y in xrange(height):
                 # source x (float)
-                dx_x = math.sin(x * dx_period_x + dx_phase_x)
-                dx_y = math.sin(y * dx_period_y + dx_phase_y)
+                dx_x = sin(x * dx_period_x + dx_phase_x)
+                dx_y = sin(y * dx_period_y + dx_phase_y)
                 sx = x + (dx_x + dx_y) * dx_amplitude
                 if not 0 <= sx < width-1:
                     continue
                 # source y (float)
-                dy_x = math.sin(x * dy_period_x + dy_phase_x)
-                dy_y = math.sin(y * dy_period_y + dy_phase_y)
+                dy_x = sin(x * dy_period_x + dy_phase_x)
+                dy_y = sin(y * dy_period_y + dy_phase_y)
                 sy = y + (dy_x + dy_y) * dy_amplitude
                 if not 0 <= sy < height-1:
                     continue
@@ -73,12 +77,12 @@ class Captcha(object):
                 fry = sy - sy_i
                 # XXX This will work for L pallete only
                 color = int(
-                    img.getpixel((sx_i, sy_i)) * (1-frx) * (1-fry) + \
-                    img.getpixel((sx_i+1, sy_i)) * frx * (1-fry) + \
-                    img.getpixel((sx_i, sy_i+1)) * (1-frx) * fry + \
-                    img.getpixel((sx_i+1, sy_i+1)) * frx * fry
+                    get((sx_i, sy_i)) * (1-frx) * (1-fry) + \
+                    get((sx_i+1, sy_i)) * frx * (1-fry) + \
+                    get((sx_i, sy_i+1)) * (1-frx) * fry + \
+                    get((sx_i+1, sy_i+1)) * frx * fry
                 )
-                new_img.putpixel((x, y), color)
+                put((x, y), color)
         return new_img
 
 
